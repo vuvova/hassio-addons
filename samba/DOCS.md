@@ -10,8 +10,8 @@ Follow these steps to get the add-on installed on your system:
 
 ## How to use
 
-1. In the configuration section, set a username and password.
-   You can specify any username and password; these are not related in any way to the login credentials you use to log in to Home Assistant or to log in to the computer with which you will use Samba share.
+1. In the configuration section, setup at least one user.
+   You can specify any usernames and passwords; these are not related in any way to the login credentials you use to log in to Home Assistant or to log in to the computer with which you will use Samba share.
 2. Save the configuration.
 3. Start the add-on.
 4. Check the add-on log output to see the result.
@@ -20,7 +20,7 @@ Follow these steps to get the add-on installed on your system:
 
 If you are on Windows you use `\\<IP_ADDRESS>\`, if you are on MacOS you use `smb://<IP_ADDRESS>` to connect to the shares.
 
-This addon exposes the following directories over smb (samba):
+By default this addon exposes the following directories over smb (samba):
 
 Directory | Description
 -- | --
@@ -38,33 +38,68 @@ Add-on configuration:
 
 ```yaml
 workgroup: WORKGROUP
-username: homeassistant
-password: YOUR_PASSWORD
+users:
+  - username: homeassistant
+    password: qwerty
+  - username: reader
+    password: public
+  - username: editor
+    password: notepad
+compatibility_mode: false
+veto_files:
+  - ._*
+  - .DS_Store
+  - Thumbs.db
+  - icon?
+  - .Trashes
 allow_hosts:
-  - 10.0.0.0/8
   - 172.16.0.0/12
   - 192.168.0.0/16
-  - 169.254.0.0/16
   - fe80::/10
   - fc00::/7
-veto_files:
-  - "._*"
-  - ".DS_Store"
-  - Thumbs.db
-compatibility_mode: false
+shares:
+  - share: addons
+  - share: addon_configs
+  - share: backup
+  - share: config
+  - share: media
+  - share: share
+    users:
+      - editor
+    ro_users:
+      - reader
+  - share: ssl
 ```
 
 ### Option: `workgroup` (required)
 
 Change WORKGROUP to reflect your network needs.
 
-### Option: `username` (required)
+### Option: `users` (required)
+
+At least one user must be defined.
+
+#### Sub-option: `username` (required)
 
 The username you would like to use to authenticate with the Samba server.
 
-### Option: `password` (required)
+#### Sub-option: `password` (required)
 
 The password that goes with the username configured for authentication.
+
+### Option: `shares` (required)
+
+Any or all of `addons`, `addon_configs`, `backup`, `config`, `media`, `share`, `ssl`
+or paths therein (e.g. `share/data` or [`config/www`](https://www.home-assistant.io/integrations/http/#hosting-files)).
+
+#### Sub-option: `users` (optional)
+
+List of users that have read-write access to the share.
+If not specified, all defined users from the above will have access.
+
+#### Sub-option: `ro_users` (optional)
+
+List of users that have read-only access to the share.
 
 ### Option: `allow_hosts` (required)
 
@@ -84,21 +119,3 @@ handle the newer protocols, however, it lowers security. Only use this
 when you absolutely need it and understand the possible consequences.
 
 Defaults to `false`.
-
-## Support
-
-Got questions?
-
-You have several options to get them answered:
-
-- The [Home Assistant Discord Chat Server][discord].
-- The Home Assistant [Community Forum][forum].
-- Join the [Reddit subreddit][reddit] in [/r/homeassistant][reddit]
-
-In case you've found a bug, please [open an issue on our GitHub][issue].
-
-[discord]: https://discord.gg/c5DvZ4e
-[forum]: https://community.home-assistant.io
-[issue]: https://github.com/home-assistant/addons/issues
-[reddit]: https://reddit.com/r/homeassistant
-[repository]: https://github.com/hassio-addons/repository

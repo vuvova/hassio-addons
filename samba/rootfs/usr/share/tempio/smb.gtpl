@@ -24,79 +24,23 @@
    dos charset = CP850
    unix charset = UTF-8
 
-[config]
+{{- $vf := .veto_files -}}
+{{- $u := .users }}
+{{ range $s := .shares }}
+[{{- regexReplaceAll "[^A-Za-z0-9_/ ]" .share "_" | regexFind "[A-Za-z0-9_ ]+$"}}]
    browseable = yes
    writeable = yes
-   path = /homeassistant
-
-   valid users = {{ .username }}
+   path = /{{-  regexReplaceAll "^config" .share "homeassistant" }}
+   valid users = {{if or .users .ro_users -}}
+                     {{- .users | join " " }} {{ .ro_users | join " " -}}
+		 {{- else -}}
+                     {{- range $user := $u }}{{ $user.username }} {{ end -}}
+		 {{- end }}
+   {{ if .ro_users -}}
+     read list = {{ .ro_users | join " " }}
+   {{- end }}
    force user = root
    force group = root
-   veto files = /{{ .veto_files | join "/" }}/
-   delete veto files = {{ eq (len .veto_files) 0 | ternary "no" "yes" }}
-
-[addons]
-   browseable = yes
-   writeable = yes
-   path = /addons
-
-   valid users = {{ .username }}
-   force user = root
-   force group = root
-   veto files = /{{ .veto_files | join "/" }}/
-   delete veto files = {{ eq (len .veto_files) 0 | ternary "no" "yes" }}
-
-[addon_configs]
-   browseable = yes
-   writeable = yes
-   path = /addon_configs
-
-   valid users = {{ .username }}
-   force user = root
-   force group = root
-   veto files = /{{ .veto_files | join "/" }}/
-   delete veto files = {{ eq (len .veto_files) 0 | ternary "no" "yes" }}
-
-[ssl]
-   browseable = yes
-   writeable = yes
-   path = /ssl
-
-   valid users = {{ .username }}
-   force user = root
-   force group = root
-   veto files = /{{ .veto_files | join "/" }}/
-   delete veto files = {{ eq (len .veto_files) 0 | ternary "no" "yes" }}
-
-[share]
-   browseable = yes
-   writeable = yes
-   path = /share
-
-   valid users = {{ .username }}
-   force user = root
-   force group = root
-   veto files = /{{ .veto_files | join "/" }}/
-   delete veto files = {{ eq (len .veto_files) 0 | ternary "no" "yes" }}
-
-[backup]
-   browseable = yes
-   writeable = yes
-   path = /backup
-
-   valid users = {{ .username }}
-   force user = root
-   force group = root
-   veto files = /{{ .veto_files | join "/" }}/
-   delete veto files = {{ eq (len .veto_files) 0 | ternary "no" "yes" }}
-
-[media]
-   browseable = yes
-   writeable = yes
-   path = /media
-
-   valid users = {{ .username }}
-   force user = root
-   force group = root
-   veto files = /{{ .veto_files | join "/" }}/
-   delete veto files = {{ eq (len .veto_files) 0 | ternary "no" "yes" }}
+   veto files = /{{ $vf | join "/" }}/
+   delete veto files = {{ eq (len $vf) 0 | ternary "no" "yes" }}
+{{ end }}
